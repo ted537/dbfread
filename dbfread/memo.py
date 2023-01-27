@@ -28,10 +28,10 @@ VFPMemoHeader = StructParser(
 
 DB4MemoHeader = StructParser(
     'DBase4MemoHeader',
-    '<LL',
-    ['reserved',  # Always 0xff 0xff 0x08 0x08.
+    '>LL',
+    ['type',
      'length'])
-
+''' DB4 Memo block header. '''
 
 class VFPMemo(bytes):
     pass
@@ -59,7 +59,6 @@ VFP_TYPE_MAP = {
     0x1: TextMemo,
     0x2: ObjectMemo,
 }
-
 
 class MemoFile(object):
     def __init__(self, filename):
@@ -151,20 +150,21 @@ class DB3MemoFile(MemoFile):
 
 class DB4MemoFile(MemoFile):
     """dBase IV memo file"""
+
+    def __init__(self, filename):
+        super().__init__(filename)
+
+        # dBase IV file header is identical to VFP file header.
+        file_header = VFPFileHeader.read(self.file)
+        self.blocksize = max(file_header.blocksize,1)
+
     def __getitem__(self, index):
         if index <= 0:
             return None
 
-        # Todo: read this from the file header.
-        block_size = 512
-
-        self._seek(index * block_size)
+        self._seek(index * self.blocksize)
         memo_header = DB4MemoHeader.read(self.file)
-        data = self._read(memo_header.length)
-        # Todo: fields are terminated in different ways.
-        # \x1a is one of them
-        # \x1f seems to be another (dbase_8b.dbt)
-        return data.split(b'\x1f', 1)[0]
+        return self._read(memo_header.length)
 
 
 def find_memofile(dbf_filename):

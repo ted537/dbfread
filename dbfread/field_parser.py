@@ -155,7 +155,10 @@ class FieldParser:
             if memo is None:
                 return None
             else:
-                return self.decode_text(memo)
+                if field.memo_flag & 0x04:
+                    return BinaryMemo(memo)
+                else:
+                    return self.decode_text(memo)
 
     def parseN(self, field, data):
         """Parse numeric field (N)

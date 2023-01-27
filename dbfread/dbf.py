@@ -46,12 +46,13 @@ DBFHeader = StructParser(
 
 DBFField = StructParser(
     'DBFField',
-    '<11scLBBHBBBB7sB',
+    '<11scLBBBBBBBB7sB',
     ['name',
      'type',
      'address',
      'length',
      'decimal_count',
+     'memo_flag',
      'reserved1',
      'workarea_id',
      'reserved2',
@@ -92,7 +93,8 @@ class DBF(object):
                  load=False,
                  raw=False,
                  ignore_missing_memofile=False,
-                 char_decode_errors='strict'):
+                 char_decode_errors='strict',
+                 memofilename=None):
 
         self.encoding = encoding
         self.ignorecase = ignorecase
@@ -139,7 +141,9 @@ class DBF(object):
                 # Invalid date or '\x00\x00\x00'.
                 self.date = None
 
-        self.memofilename = self._get_memofilename()
+        self.memofilename = memofilename
+        if self.memofilename is None:
+            self.memofilename = self._get_memofilename()
 
         if load:
             self.load()

@@ -24,11 +24,11 @@ class MockMemoFile(dict):
         else:
             return dict.__getitem__(self, index)
 
-def make_field_parser(field_type, dbversion=0x02, memofile=None):
+def make_field_parser(field_type, dbversion=0x02, memofile=None, memo_flag=0):
     dbf = MockDBF()
     dbf.header.dbversion = dbversion
     parser = FieldParser(dbf, memofile)
-    field = MockField(field_type)
+    field = MockField(field_type, memo_flag=memo_flag)
 
     def parse(data):
         return parser.parse(field, data)
@@ -104,7 +104,7 @@ def test_L():
 
 # This also tests B, G and P.
 def test_M():
-    parse = make_field_parser('M', memofile=MockMemoFile({1: b'test'}))
+    parse = make_field_parser('M', memofile=MockMemoFile({1: b'test'}), memo_flag=0)
 
     assert parse(b'\x01\x00\x00\x00') == u'test'
     assert parse(b'1') == u'test'
